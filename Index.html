@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gran Rifa Mega Fortuna</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="loader-wrapper">
+        <div class="loader"></div>
+    </div>
+
+    <header class="top-bar">
+        <img src="https://i.imgur.com/icCo1me.jpeg" alt="Logo Agencia" class="logo" />
+        <div class="marquee-container">
+            <p class="marquee-text">¡Bienvenido a Agencia de Rifas Gran Fortuna! Compra tus tickets y participa hoy mismo. ¡Suerte para todos! 🎉</p>
+        </div>
+    </header>
+
+    <main>
+        <h1>Gran Rifa Mega Fortuna</h1>
+        <button class="btn comprar" onclick="openPurchaseModal()">Compra tu ticket aquí</button>
+        <button class="btn reportar" onclick="openModal('reportModal')">Reportar Pago</button>
+
+        <div class="contact-section">
+            <h2>¿Tienes dudas? ¡Contáctanos!</h2>
+            <p>Estamos aquí para ayudarte. Si tienes alguna pregunta sobre la rifa, tu compra o cualquier otra consulta, no dudes en escribirnos.</p>
+            <div>
+                <a href="https://wa.me/584121234567" target="_blank" class="whatsapp-button">
+                    <i class="fab fa-whatsapp"></i> WhatsApp Soporte 1
+                </a>
+                <a href="https://wa.me/584247654321" target="_blank" class="whatsapp-button">
+                    <i class="fab fa-whatsapp"></i> WhatsApp Soporte 2
+                </a>
+            </div>
+        </div>
+
+        <div class="modal" id="comprarModal">
+            <div class="modal-content">
+                <h2>Formulario de Compra</h2>
+                <form id="raffleForm">
+                    <input type="text" placeholder="Nombre" id="nombre" name="nombre" required />
+                    <input type="text" placeholder="Apellido" id="apellido" name="apellido" required />
+                    <input type="text" placeholder="Cédula" id="cedula" name="cedula" required pattern="[VEGJPvegjp]{1}-\d{7,8}|\d{7,8}" title="Formato: V-12345678 o 12345678"/>
+                    <input type="tel" placeholder="Teléfono" id="telefono" name="telefono" required pattern="\d{10,11}" title="Formato: 04121234567"/>
+                    <input type="email" placeholder="Correo" id="correo" name="correo" required />
+
+                    <button type="button" id="selectTicketsBtn" onclick="openTicketSelectionModal()">Seleccionar Tickets</button>
+                    <div id="selectedTicketsInfo" style="margin-top: 10px; font-weight: bold; color: #555; text-align: left; width: 100%;">
+                        <p>Tickets seleccionados: <span id="displaySelectedTickets">Ninguno</span></p>
+                        <p id="montoDisplay">Monto a pagar: Bs. 0</p>
+                    </div>
+
+                    <button type="button" id="showPaymentDetailsBtn" class="pay-button">Pagar</button>
+
+                    <div id="paymentOptionsContainer" style="display: none; width: 100%; text-align: center;">
+                        <p style="font-size: 1.1em; font-weight: bold; margin-bottom: 15px; color: #6a0dad;">Selecciona tu método de pago:</p>
+
+                        <div class="payment-option-container">
+                            <h3>Pago Móvil (Banesco)</h3>
+                            <p><strong>Banco:</strong> <span id="pm1Bank"></span></p>
+                            <p><strong>Cédula:</strong> <span id="pm1Cedula"></span></p>
+                            <p><strong>Teléfono:</strong> <span id="pm1Phone"></span></p>
+                            <p><strong>Monto:</strong> <span id="pm1Monto">Bs. 0</span></p>
+                            <button type="button" class="copy-button" onclick="copyPaymentData('pm1')">Copiar Datos Pago Móvil 1</button>
+                            <div class="copy-message" id="pm1CopyMessage"></div>
+                        </div>
+
+                        <div class="payment-option-container">
+                            <h3>Pago Móvil (Banco Venezuela)</h3>
+                            <p><strong>Banco:</strong> <span id="pm2Bank"></span></p>
+                            <p><strong>Cédula:</strong> <span id="pm2Cedula"></span></p>
+                            <p><strong>Teléfono:</strong> <span id="pm2Phone"></span></p>
+                            <p><strong>Monto:</strong> <span id="pm2Monto">Bs. 0</span></p>
+                            <button type="button" class="copy-button" onclick="copyPaymentData('pm2')">Copiar Datos Pago Móvil 2</button>
+                            <div class="copy-message" id="pm2CopyMessage"></div>
+                        </div>
+
+                        <p style="font-size: 0.9em; color: #555; margin-top: 15px;">Por favor, realiza el pago a los datos elegidos y luego haz clic en "Enviar Registros".</p>
+                    </div>
+
+                    <button type="submit" id="submitRaffleFormBtn" style="display: none; margin-top: 10px;">Enviar Registros</button>
+                </form>
+
+                <div id="raffleFormResponseMessage"></div>
+
+                <button onclick="closeModal('comprarModal')">Cerrar Formulario</button>
+            </div>
+        </div>
+
+        <div class="modal" id="ticketSelectionModal">
+            <div class="modal-content">
+                <h2>Selecciona tu número de Ticket</h2>
+                <div id="selectedTicketsDisplayModal">
+                    Tickets seleccionados: <span id="currentSelectedTickets">Ninguno</span>
+                    <p id="currentTicketsCount">0 tickets</p>
+                </div>
+                <div id="ticketGrid"></div>
+                <p>Mínimo 2 tickets.</p>
+                <button onclick="confirmTicketSelection()">Confirmar Selección</button>
+                <button onclick="cancelTicketSelection()">Cancelar</button>
+            </div>
+        </div>
+
+        <div class="modal" id="reportModal">
+            <div class="modal-content">
+                <h2>Ingrese los datos de su pago</h2>
+                <input type="text" id="cedulaReporte" placeholder="Cédula" />
+                <input type="tel" id="telefonoReporte" placeholder="Teléfono" />
+                <input type="email" id="correoReporte" placeholder="Correo" />
+                <input type="text" id="referencia" placeholder="Referencia (últimos 6 dígitos)" />
+                <select id="bancoEmisor">
+                    <option disabled selected value="">Seleccione banco emisor</option>
+                    <option value="0102 - Banco de Venezuela">0102 - Banco de Venezuela</option>
+                    <option value="0104 - Banco Venezolano de Crédito">0104 - Venezolano de Crédito</option>
+                    <option value="0105 - Banco Mercantil">0105 - Mercantil</option>
+                    <option value="0108 - Banco Provincial">0108 - Provincial</option>
+                    <option value="0114 - Banesco">0114 - Banesco</option>
+                    <option value="0115 - Banco Exterior">0115 - Exterior</option>
+                    <option value="0134 - BNC">0134 - BNC</option>
+                    <option value="0137 - Sofitasa">0137 - Sofitasa</option>
+                    <option value="0172 - Bancamiga">0172 - Bancamiga</option>
+                    <option value="0174 - Banplus">0174 - Banplus</option>
+                    <option value="0175 - Banco Bicentenario">0175 - Bicentenario</option>
+                    <option value="0191 - Banco Nacional de Crédito">0191 - BNC</option>
+                </select>
+                <button onclick="enviarReporte()">Enviar datos del pago</button>
+                <button onclick="closeModal('reportModal')">Cancelar</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        &copy; 2025 Gran Rifa Mega Fortuna — Creado por Agencia de Rifas Gran Fortuna
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
