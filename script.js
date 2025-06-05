@@ -1,24 +1,13 @@
 // ** IMPORTANTE: REEMPLAZA ESTA URL CON LA URL DE DESPLIEGUE DE TU APPS SCRIPT (doPost) **
 // Esta es la URL de tu proyecto "WebFormularioDeRifa" en Google Apps Script
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqG-mAFv-sdK5vP3kkUyIHFdf4kIXfdPieO-u7fYT_pfoE_ZPfqegsv6b8GvtFO2CnKQ/exec"; // <-- ¡ACTUALIZA ESTO CON TU PROPIA URL!
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqG-mAFv-sdK5vP3kkUyIHFdf4kIXfdPieO-u7fYT_pfoE_ZPfqegsv6b8GvtFO7CnKQ/exec"; // <-- ¡ACTUALIZA ESTO CON TU PROPIA URL!
 
 let tasaDolar = 0;
 const precioTicketUSD = 1;
 
-// Datos para Pago Móvil 1 (Banesco)
-const cedulaPM1 = "V-12345678"; // <--- CAMBIA ESTOS DATOS
-const telefonoPM1 = "0412-1234567"; // <--- CAMBIA ESTOS DATOS
-const bankPM1 = "Banesco";
-
-// Datos para Pago Móvil 2 (Banco de Venezuela)
-const cedulaPM2 = "V-87654321"; // <--- CAMBIA ESTOS DATOS
-const telefonoPM2 = "0424-7654321"; // <--- CAMBIA ESTOS DATOS
-const bankPM2 = "Banco de Venezuela";
-
-// Números de WhatsApp para contacto (con código de país sin el +)
-// NOTA: Estos números ya están en el HTML, pero se mantienen aquí como referencia
-// const whatsappNumber1 = "584121234567"; // <--- CAMBIA ESTE NÚMERO
-// const whatsappNumber2 = "584247654321"; // <--- CAMBIA ESTE NÚMERO
+// Datos para Pago Móvil (se usan para todos los bancos en este flujo)
+const cedulaFija = "12345678"; // <--- CAMBIA ESTOS DATOS POR LA CÉDULA DEL BENEFICIARIO
+const telefonoFijo = "04141234567"; // <--- CAMBIA ESTOS DATOS POR EL TELÉFONO DEL BENEFICIARIO
 
 const TOTAL_TICKETS = 10000; // Total de tickets disponibles
 const MIN_TICKETS_PURCHASE = 2; // Compra mínima
@@ -47,9 +36,9 @@ async function obtenerTasaDolar() {
         calcularMonto();
     } catch (error) {
         console.error("Error al obtener la tasa del dólar:", error);
-        tasaDolar = 98; // valor por defecto si falla la API
+        tasaDolar = 40; // valor por defecto si falla la API
         calcularMonto();
-        alert("Advertencia: No se pudo obtener la tasa de cambio actual. Se usará un valor de Bs. 98 por dólar.");
+        alert("Advertencia: No se pudo obtener la tasa de cambio actual. Se usará un valor de Bs. 40 por dólar.");
     } finally {
         // El loader inicial ya maneja el ocultamiento
     }
@@ -63,30 +52,21 @@ function closeModal(id) {
     document.getElementById(id).style.display = "none";
 }
 
-// Nueva función para abrir el modal de compra principal
+// Función para abrir el modal de compra principal
 function openPurchaseModal() {
     // Reinicia la selección de tickets al abrir el modal principal de compra
     selectedTickets.clear();
     updateSelectedTicketsInfo(); // Actualiza el display de tickets seleccionados
 
-    // Restablecer el estado inicial del formulario de compra y sus botones/mensajes
+    // Limpia los campos del formulario de compra
     const raffleForm = document.getElementById('raffleForm');
-    raffleForm.reset(); // Limpia los campos del formulario
+    raffleForm.reset();
 
-    document.getElementById('paymentOptionsContainer').style.display = 'none'; // Oculta info de pago
-    document.getElementById('submitRaffleFormBtn').style.display = 'none'; // Oculta botón de enviar
-    document.getElementById('showPaymentDetailsBtn').style.display = 'block'; // Muestra botón "Pagar"
-    document.getElementById('showPaymentDetailsBtn').disabled = false; // Asegura que no esté deshabilitado
-
+    // Limpia y restablece el mensaje de respuesta del formulario de compra
     const raffleFormResponseMessage = document.getElementById('raffleFormResponseMessage');
-    raffleFormResponseMessage.textContent = ''; // Limpia mensajes previos
+    raffleFormResponseMessage.textContent = '';
     raffleFormResponseMessage.style.backgroundColor = 'transparent';
     raffleFormResponseMessage.style.color = 'black';
-
-    // Limpiar mensajes de copia
-    document.getElementById('pm1CopyMessage').textContent = '';
-    document.getElementById('pm2CopyMessage').textContent = '';
-
 
     openModal('comprarModal');
 }
@@ -97,11 +77,11 @@ function calcularMonto() {
     if (cantidad >= MIN_TICKETS_PURCHASE && tasaDolar > 0) {
         montoBs = (cantidad * precioTicketUSD * tasaDolar).toFixed(2);
     }
+    // Actualiza el monto en el display principal del modal de compra
     document.getElementById("montoDisplay").innerText = `Monto a pagar: Bs. ${montoBs}`;
-
-    // Actualiza los montos en las opciones de pago móvil
-    document.getElementById("pm1Monto").innerText = `Bs. ${montoBs}`;
-    document.getElementById("pm2Monto").innerText = `Bs. ${montoBs}`;
+    // Actualiza el monto en el modal de bancos
+    document.getElementById("bankModalMonto").innerText = `Bs. ${montoBs}`;
+    // El paymentInfo en paymentModal se actualiza en mostrarDatosPago()
 }
 
 // Función para actualizar el display de tickets seleccionados en el formulario de compra
@@ -147,8 +127,7 @@ async function openTicketSelectionModal() {
     closeModal('comprarModal'); // Cierra el modal de compra temporalmente
 
     // Obtener tickets vendidos al abrir el modal
-    const result = await enviarDatosAAppsScript({}, "TicketsComprados", "GET"); // No se envía data, solo se pide los tickets
-    // hideLoader() ya lo maneja enviarDatosAAppsScript
+    const result = await enviarDatosAAppsScript({}, "TicketsComprados", "GET");
 
     if (result.status === "success") {
         soldTickets = new Set(result.soldTickets); // Actualiza la lista de tickets vendidos
@@ -238,65 +217,20 @@ function cancelTicketSelection() {
 
 // --- Fin Lógica del Modal de Selección de Tickets ---
 
-// Función para copiar datos al portapapeles
-function copyToClipboard(text, messageElementId) {
-    navigator.clipboard.writeText(text).then(() => {
-        const messageElement = document.getElementById(messageElementId);
-        messageElement.textContent = '¡Copiado!';
-        setTimeout(() => {
-            messageElement.textContent = '';
-        }, 2000); // El mensaje desaparece después de 2 segundos
-    }).catch(err => {
-        console.error('Error al copiar: ', err);
-        alert('Error al copiar los datos. Por favor, inténtalo manualmente.');
-    });
-}
-
-// Función para manejar la copia de datos de Pago Móvil
-function copyPaymentData(type) {
-    let dataToCopy = '';
-    let messageElementId = '';
-    const monto = document.getElementById('montoDisplay').textContent.replace('Monto a pagar: ', ''); // Obtiene el monto del display general
-
-    if (type === 'pm1') {
-        const bank = document.getElementById('pm1Bank').textContent;
-        const cedula = document.getElementById('pm1Cedula').textContent;
-        const phone = document.getElementById('pm1Phone').textContent;
-        dataToCopy = `Pago Móvil (${bank}):\nBanco: ${bank}\nCédula: ${cedula}\nTeléfono: ${phone}\nMonto: ${monto}`;
-        messageElementId = 'pm1CopyMessage';
-    } else if (type === 'pm2') {
-        const bank = document.getElementById('pm2Bank').textContent;
-        const cedula = document.getElementById('pm2Cedula').textContent;
-        const phone = document.getElementById('pm2Phone').textContent;
-        dataToCopy = `Pago Móvil (${bank}):\nBanco: ${bank}\nCédula: ${cedula}\nTeléfono: ${phone}\nMonto: ${monto}`;
-        messageElementId = 'pm2CopyMessage';
-    }
-    copyToClipboard(dataToCopy, messageElementId);
-}
 
 // Lógica para el nuevo flujo de "Pagar" y "Enviar Registros"
 document.addEventListener('DOMContentLoaded', function() {
     const raffleForm = document.getElementById('raffleForm');
-    const showPaymentDetailsBtn = document.getElementById('showPaymentDetailsBtn'); // Botón "Pagar"
+    const showPaymentOptionsBtn = document.getElementById('showPaymentOptionsBtn'); // Botón "Pagar"
     const submitRaffleFormBtn = document.getElementById('submitRaffleFormBtn'); // Botón "Enviar Registros"
-    const paymentOptionsContainer = document.getElementById('paymentOptionsContainer'); // Nuevo contenedor de opciones de pago
     const raffleFormResponseMessage = document.getElementById('raffleFormResponseMessage'); // Mensajes del formulario de compra
 
-    // Inicializar los valores fijos de pago móvil
-    document.getElementById('pm1Bank').textContent = bankPM1;
-    document.getElementById('pm1Cedula').textContent = cedulaPM1;
-    document.getElementById('pm1Phone').textContent = telefonoPM1;
-
-    document.getElementById('pm2Bank').textContent = bankPM2;
-    document.getElementById('pm2Cedula').textContent = cedulaPM2;
-    document.getElementById('pm2Phone').textContent = telefonoPM2;
-
-    // Evento para mostrar las opciones de pago y el botón de enviar
-    showPaymentDetailsBtn.addEventListener('click', function(event) {
-        // Validación de campos del formulario antes de mostrar el pago
+    // Evento para el botón "Pagar" (que abre el modal de bancos)
+    showPaymentOptionsBtn.addEventListener('click', function(event) {
+        // Validación de campos del formulario antes de mostrar opciones de pago
         if (!raffleForm.checkValidity()) {
             raffleForm.reportValidity(); // Muestra mensajes de error del navegador
-            raffleFormResponseMessage.textContent = 'Por favor, completa todos los campos requeridos y selecciona tus tickets antes de proceder al pago.';
+            raffleFormResponseMessage.textContent = 'Por favor, completa todos los campos requeridos y selecciona tus tickets antes de ver las opciones de pago.';
             raffleFormResponseMessage.style.color = 'red';
             raffleFormResponseMessage.style.backgroundColor = '#ffe0e0';
             return;
@@ -311,27 +245,40 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Si todas las validaciones pasan, muestra la información de pago y el botón de enviar
-        paymentOptionsContainer.style.display = 'block'; // Muestra el nuevo contenedor de opciones de pago
-        submitRaffleFormBtn.style.display = 'block'; // Muestra el botón de enviar
-        showPaymentDetailsBtn.style.display = 'none'; // Oculta el botón de "Pagar"
-        showPaymentDetailsBtn.disabled = false; // Asegura que no esté deshabilitado
+        // Si todas las validaciones pasan, abre el modal de selección de bancos
+        closeModal('comprarModal'); // Cierra el modal de compra temporalmente
+        openModal('bankModal'); // Abre el modal de selección de banco
         raffleFormResponseMessage.textContent = ''; // Limpia mensajes previos
         raffleFormResponseMessage.style.backgroundColor = 'transparent';
         raffleFormResponseMessage.style.color = 'black';
-        calcularMonto(); // Asegura que el monto esté actualizado en las opciones de pago
     });
 
-    // Evento para enviar el formulario a Google Apps Script (cuando se presiona "Enviar Registros")
+    // Evento para el botón "Enviar Registros" (cuando se presiona "Enviar Registros")
     raffleForm.addEventListener('submit', async function(event) {
         event.preventDefault(); // Evita el envío tradicional del formulario HTML
+
+        // Primero, una validación rápida antes de intentar enviar
+        if (!raffleForm.checkValidity()) {
+            raffleForm.reportValidity();
+            raffleFormResponseMessage.textContent = 'Por favor, completa todos los campos requeridos antes de enviar los registros.';
+            raffleFormResponseMessage.style.color = 'red';
+            raffleFormResponseMessage.style.backgroundColor = '#ffe0e0';
+            return;
+        }
+        if (selectedTickets.size < MIN_TICKETS_PURCHASE) {
+            alert(`Por favor, selecciona al menos ${MIN_TICKETS_PURCHASE} tickets antes de enviar los registros.`);
+            raffleFormResponseMessage.textContent = `Por favor, selecciona al menos ${MIN_TICKETS_PURCHASE} tickets.`;
+            raffleFormResponseMessage.style.color = 'orange';
+            raffleFormResponseMessage.style.backgroundColor = '#fff3cd';
+            return;
+        }
 
         raffleFormResponseMessage.textContent = 'Enviando tus registros... por favor espera.';
         raffleFormResponseMessage.style.color = 'blue';
         raffleFormResponseMessage.style.backgroundColor = '#e0f7fa';
 
         // Deshabilitar botones para evitar envíos múltiples
-        showPaymentDetailsBtn.disabled = true;
+        showPaymentOptionsBtn.disabled = true;
         submitRaffleFormBtn.disabled = true;
 
         // Recopilar datos del formulario
@@ -365,10 +312,9 @@ document.addEventListener('DOMContentLoaded', function() {
             selectedTickets.clear(); // Limpiar la selección de tickets
             updateSelectedTicketsInfo(); // Actualizar el display de tickets
 
-            paymentOptionsContainer.style.display = 'none'; // Oculta las opciones de pago
-            submitRaffleFormBtn.style.display = 'none'; // Oculta el botón de enviar
-            showPaymentDetailsBtn.style.display = 'block'; // Vuelve a mostrar el botón de "Pagar"
-            showPaymentDetailsBtn.disabled = false; // Habilita el botón de "Pagar"
+            // Re-habilitar botones para un nuevo proceso
+            showPaymentOptionsBtn.disabled = false;
+            submitRaffleFormBtn.disabled = false;
 
         } else {
             raffleFormResponseMessage.textContent = `Error al enviar los registros: ${result.message || 'Inténtelo de nuevo.'}`;
@@ -376,13 +322,30 @@ document.addEventListener('DOMContentLoaded', function() {
             raffleFormResponseMessage.style.backgroundColor = '#ffe0e0';
 
             // Re-habilitar botones para permitir reintentar
-            showPaymentDetailsBtn.disabled = false;
+            showPaymentOptionsBtn.disabled = false;
             submitRaffleFormBtn.disabled = false;
         }
     });
 });
 
-// Función para enviar datos del reporte de pago
+
+// Las funciones `mostrarDatosPago` y `copiarDatos` se mantienen para el flujo de pago móvil.
+
+function mostrarDatosPago(banco) {
+    closeModal("bankModal");
+    const montoBsText = document.getElementById("montoDisplay").innerText; // Obtener el monto de la compra
+    const montoBs = parseFloat(montoBsText.replace('Monto a pagar: Bs. ', ''));
+    const datos = `Banco: ${banco}\nCédula: ${cedulaFija}\nTeléfono: ${telefonoFijo}\nMonto: Bs. ${montoBs}`;
+    document.getElementById("paymentInfo").innerText = datos;
+    openModal("paymentModal");
+}
+
+function copiarDatos() {
+    const texto = document.getElementById("paymentInfo").innerText;
+    navigator.clipboard.writeText(texto).then(() => alert("Datos copiados al portapapeles"));
+}
+
+// Función para enviar datos del reporte de pago (mantener tal cual)
 async function enviarReporte() {
     const cedula = document.getElementById("cedulaReporte").value.trim();
     const telefono = document.getElementById("telefonoReporte").value.trim();
