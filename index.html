@@ -10,7 +10,471 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilos generales del HTML y BODY */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif; /* Fuente principal para el cuerpo */
+            background: linear-gradient(to right, #6a0dad, #228B22); /* Degradado original */
+            color: white;
+            text-align: center;
+            flex: 1 0 auto;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        main {
+            flex: 1 0 auto;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif; /* Fuente para los títulos */
+            font-size: 3rem;
+            margin-top: 2rem;
+            text-shadow: 2px 2px 5px black;
+            transition: text-shadow 0.5s ease;
+        }
+
+        /* Estilos de botones generales */
+        .btn {
+            padding: 1rem 2rem;
+            font-size: 1.5rem;
+            margin: 1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Estilos específicos del botón "Comprar" */
+        .comprar {
+            background-color: #32cd32; /* Verde brillante */
+            color: white;
+            box-shadow: 0 0 15px rgba(50, 205, 50, 0.7); /* Sombra que brilla */
+            animation: pulseEffect 2s infinite; /* Aplica la animación */
+        }
+
+        .comprar:hover {
+            background-color: #3CB371; /* Verde un poco más claro al pasar el mouse */
+        }
+
+        /* Estilos específicos del botón "Reportar" */
+        .reportar {
+            background-color: #8a2be2; /* Morado azulado */
+            color: white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .reportar:hover {
+            background-color: #9932CC; /* Morado un poco más claro al pasar el mouse */
+        }
+
+        /* Estilos para el botón de Pagar (anteriormente showPaymentDetailsBtn) */
+        .pay-button {
+            background-color: #FFD700; /* Dorado */
+            color: #333; /* Texto oscuro para contraste */
+            padding: 1.2rem 2.5rem; /* Más grande */
+            font-size: 1.8rem; /* Fuente más grande */
+            border-radius: 15px; /* Bordes más redondeados */
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); /* Sombra más brillante y dorada */
+            animation: pulseEffectGolden 2s infinite; /* Nueva animación de pulso dorada */
+            width: 80%; /* Hacerlo más ancho dentro del modal */
+            max-width: 300px; /* Ancho máximo para que no sea excesivamente grande */
+            margin: 20px auto; /* Centrarlo con margin auto */
+            display: block; /* Para que margin auto funcione */
+        }
+
+        .pay-button:hover {
+            background-color: #FFC400; /* Dorado más oscuro al pasar el mouse */
+            transform: scale(1.08); /* Efecto de escala más pronunciado */
+            box-shadow: 0 0 30px rgba(255, 215, 0, 1); /* Sombra aún más brillante */
+        }
+
+        /* Animación de pulso para el botón comprar */
+        @keyframes pulseEffect {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 15px rgba(50, 205, 50, 0.7);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 25px rgba(50, 205, 50, 1); /* Más brillo en el medio */
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 15px rgba(50, 205, 50, 0.7);
+            }
+        }
+
+        /* Nueva animación de pulso para el botón de Pagar (dorado) */
+        @keyframes pulseEffectGolden {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            }
+            50% {
+                transform: scale(1.08);
+                box-shadow: 0 0 40px rgba(255, 215, 0, 1.2); /* Más brillo y alcance */
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            }
+        }
+
+        /* Estilos de modales */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .modal-content {
+            background: white;
+            color: black;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            transition: background 0.5s ease, color 0.5s ease, box-shadow 0.5s ease;
+            max-height: 90vh; /* Limitar altura del modal */
+            overflow-y: auto; /* Permitir scroll si el contenido es largo */
+            display: flex; /* Añadido para mejor control del contenido */
+            flex-direction: column; /* Contenido en columna */
+            align-items: center; /* Centrar items */
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: inherit; /* Hereda el color del texto del modal-content */
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+        }
+
+        .modal-content button {
+            margin-top: 1rem;
+            padding: 0.7rem 1.5rem;
+            border: none;
+            background-color: #6a0dad;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .modal-content button:hover {
+            background-color: #5b00b7;
+        }
+        
+        /* Estilos del footer */
+        footer {
+            flex-shrink: 0;
+            background-color: rgba(0,0,0,0.3);
+            color: white;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 1rem 0;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        /* Estilos de la barra superior */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            background-color: #4b0082; /* morado oscuro */
+            padding: 0.3rem 1rem;
+            border-bottom: 3px solid #32cd32; /* línea verde */
+            height: 40px;
+            overflow: hidden;
+            transition: background-color 0.5s ease, border-color 0.5s ease;
+        }
+
+        .logo {
+            height: 40px; /* Ajustado el tamaño del logo */
+            width: auto;
+            margin-right: 1rem;
+        }
+
+        .marquee-container {
+            flex: 1;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .marquee-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 15s linear infinite;
+            font-weight: bold;
+            color: #32cd32; /* verde brillante */
+            text-shadow: 0 0 5px #32cd32;
+            transition: color 0.5s ease, text-shadow 0.5s ease;
+        }
+
+        @keyframes marquee {
+            0% {
+                transform: translateX(0%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* --- Estilos para el Loader --- */
+        #loader-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #6a0dad, #228B22); /* Colores de tu página */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999; /* Asegura que esté por encima de todo */
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        #loader-wrapper.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader {
+            border: 8px solid rgba(255, 255, 255, 0.3); /* Color claro para el borde interior */
+            border-top: 8px solid #32cd32; /* Verde más brillante para la parte que gira */
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite; /* Animación de giro */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* --- Fin de Estilos para el Loader --- */
+
+        /* Nuevos estilos para el modal de selección de tickets */
+        #ticketSelectionModal .modal-content {
+            max-width: 800px; /* Más ancho para mostrar tickets */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #ticketGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* Columnas responsivas */
+            gap: 8px;
+            margin-top: 20px;
+            max-height: 50vh; /* Limitar la altura de la cuadrícula de tickets */
+            overflow-y: auto; /* Scroll dentro de la cuadrícula */
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            width: 100%; /* Asegurar que ocupe todo el ancho disponible */
+        }
+
+        .ticket-item {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            color: white; /* Texto blanco para todos los tickets */
+            font-size: 0.9em;
+        }
+
+        .ticket-item.available {
+            background-color: #32cd32; /* Verde para disponible */
+        }
+
+        .ticket-item.selected {
+            background-color: #6a0dad; /* Morado para seleccionado (cambia del verde) */
+            transform: scale(1.05);
+            border: 2px solid #fff;
+        }
+
+        .ticket-item.sold {
+            background-color: #dc3545; /* Rojo para vendido */
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        #selectedTicketsDisplayModal { /* Renombrado para evitar conflicto con #selectedTicketsInfo */
+            margin-top: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            width: 100%;
+            text-align: left;
+        }
+        #currentTicketsCount {
+            font-size: 1em;
+            color: #555;
+            margin-top: 5px;
+            width: 100%;
+            text-align: left;
+        }
+        #ticketSelectionModal button {
+            width: auto;
+            padding: 0.8rem 1.8rem;
+            margin: 10px;
+        }
+
+        /* Estilos para el nuevo mensaje de respuesta */
+        #responseMessage {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            color: black; /* Default color */
+            background-color: transparent; /* Default background */
+        }
+        /* Estilos para las opciones de pago (nuevos contenedores) */
+        .payment-option-container {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            background-color: #f0f8ff; /* Un color suave para diferenciar */
+            text-align: left;
+            width: 90%; /* Ajustar al ancho del modal content */
+            max-width: 450px; /* Asegurar que no sea demasiado grande */
+            margin-bottom: 15px; /* Espacio entre opciones */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: #333;
+        }
+
+        .payment-option-container h3 {
+            color: #4b0082; /* Morado oscuro para los títulos */
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            text-align: center;
+            font-size: 1.3em;
+        }
+        .payment-option-container p {
+            margin-bottom: 5px;
+            font-size: 1em;
+        }
+        .payment-option-container strong {
+            color: #6a0dad; /* Morado para los labels */
+        }
+
+        .copy-button {
+            background-color: #32cd32; /* Verde del botón comprar */
+            color: white;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9em;
+            border-radius: 5px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: block; /* Para que ocupe todo el ancho disponible y se centre si es necesario */
+            width: fit-content; /* Se ajusta al contenido */
+            margin-left: auto; /* Centrar el botón */
+            margin-right: auto; /* Centrar el botón */
+        }
+
+        .copy-button:hover {
+            background-color: #28a745; /* Verde más oscuro al pasar el mouse */
+        }
+
+        /* Estilo para el mensaje de copia */
+        .copy-message {
+            font-size: 0.8em;
+            color: green;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        /* --- NUEVOS ESTILOS PARA LA SECCIÓN DE CONTACTO --- */
+        .contact-section {
+            background-color: rgba(0, 0, 0, 0.4); /* Fondo semi-transparente oscuro */
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            color: white;
+            text-align: center;
+        }
+
+        .contact-section h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            color: #FFD700; /* Dorado para el título de contacto */
+            margin-bottom: 1rem;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .contact-section p {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+
+        .whatsapp-button {
+            display: inline-flex; /* Para alinear el ícono y el texto */
+            align-items: center;
+            background-color: #25D366; /* Color de WhatsApp */
+            color: white;
+            padding: 0.8rem 1.5rem;
+            margin: 0.5rem;
+            border-radius: 25px; /* Bordes más redondeados */
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .whatsapp-button:hover {
+            background-color: #1DA851; /* Verde más oscuro al pasar el mouse */
+            transform: translateY(-2px); /* Pequeño efecto de levantamiento */
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        .whatsapp-button i {
+            margin-right: 8px; /* Espacio entre el ícono y el texto */
+            font-size: 1.5rem; /* Tamaño del ícono */
+        }
+    </style>
 </head>
 <body>
     <div id="loader-wrapper">
@@ -141,6 +605,435 @@
         &copy; 2025 Gran Rifa Mega Fortuna — Creado por Agencia de Rifas Gran Fortuna
     </footer>
 
-    <script src="script.js"></script>
+    <script>
+        // ** IMPORTANTE: REEMPLAZA ESTA URL CON LA URL DE DESPLIEGUE DE TU APPS SCRIPT (doPost) **
+        // Esta es la URL de tu proyecto "WebFormularioDeRifa" en Google Apps Script
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqG-mAFv-sdK5vP3kkUyIHFdf4kIXfdPieO-u7fYT_pfoE_ZPfqegsv6b8GvtFO7CnKQ/exec"; // <-- ¡ACTUALIZA ESTO!
+
+        let tasaDolar = 0;
+        const precioTicketUSD = 1;
+        
+        // Datos para Pago Móvil 1 (Banesco)
+        const cedulaPM1 = "V-12345678"; 
+        const telefonoPM1 = "0412-1234567";
+        const bankPM1 = "Banesco"; 
+
+        // Datos para Pago Móvil 2 (Banco de Venezuela)
+        const cedulaPM2 = "V-87654321"; 
+        const telefonoPM2 = "0424-7654321";
+        const bankPM2 = "Banco de Venezuela"; 
+
+        // Números de WhatsApp para contacto (con código de país sin el +) - Añadido desde el segundo código
+        const whatsappNumber1 = "584121234567"; 
+        const whatsappNumber2 = "584247654321"; 
+
+        const TOTAL_TICKETS = 10000; // Total de tickets disponibles
+        const MIN_TICKETS_PURCHASE = 2; // Compra mínima
+
+        let soldTickets = new Set(); // Almacena los tickets ya vendidos
+        let selectedTickets = new Set(); // Tickets seleccionados por el usuario en el modal
+
+        // Referencia al loader
+        const loaderWrapper = document.getElementById('loader-wrapper');
+
+        // Función para mostrar el loader
+        function showLoader() {
+            loaderWrapper.classList.remove('hidden');
+        }
+
+        // Función para ocultar el loader
+        function hideLoader() {
+            loaderWrapper.classList.add('hidden');
+        }
+
+        async function obtenerTasaDolar() {
+            try {
+                const res = await fetch("https://pydolarvenezuela-api.vercel.app/api/v1/dollar/bcv");
+                const data = await res.json();
+                tasaDolar = parseFloat(data.price);
+                calcularMonto();
+            } catch (error) {
+                console.error("Error al obtener la tasa del dólar:", error);
+                tasaDolar = 98; // valor por defecto si falla la API
+                calcularMonto();
+                alert("Advertencia: No se pudo obtener la tasa de cambio actual. Se usará un valor de Bs. 98 por dólar.");
+            } finally {
+                // El loader inicial ya maneja el ocultamiento
+            }
+        }
+
+        function openModal(id) {
+            document.getElementById(id).style.display = "flex";
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = "none";
+        }
+
+        // Nueva función para abrir el modal de compra principal
+        function openPurchaseModal() {
+            // Reinicia la selección de tickets al abrir el modal principal de compra
+            selectedTickets.clear();
+            updateSelectedTicketsInfo(); // Actualiza el display de tickets seleccionados
+            
+            // Restablecer el estado inicial del formulario de compra y sus botones/mensajes
+            const raffleForm = document.getElementById('raffleForm');
+            raffleForm.reset(); // Limpia los campos del formulario
+            
+            document.getElementById('paymentOptionsContainer').style.display = 'none'; // Oculta info de pago
+            document.getElementById('submitRaffleFormBtn').style.display = 'none'; // Oculta botón de enviar
+            document.getElementById('showPaymentDetailsBtn').style.display = 'block'; // Muestra botón "Pagar"
+            document.getElementById('showPaymentDetailsBtn').disabled = false; // Asegura que no esté deshabilitado
+
+            const raffleFormResponseMessage = document.getElementById('raffleFormResponseMessage');
+            raffleFormResponseMessage.textContent = ''; // Limpia mensajes previos
+            raffleFormResponseMessage.style.backgroundColor = 'transparent';
+            raffleFormResponseMessage.style.color = 'black';
+
+            // Limpiar mensajes de copia
+            document.getElementById('pm1CopyMessage').textContent = '';
+            document.getElementById('pm2CopyMessage').textContent = '';
+
+
+            openModal('comprarModal');
+        }
+
+        function calcularMonto() {
+            const cantidad = selectedTickets.size;
+            let montoBs = 0;
+            if (cantidad >= MIN_TICKETS_PURCHASE && tasaDolar > 0) {
+                montoBs = (cantidad * precioTicketUSD * tasaDolar).toFixed(2);
+            }
+            document.getElementById("montoDisplay").innerText = `Monto a pagar: Bs. ${montoBs}`;
+            
+            // Actualiza los montos en las opciones de pago móvil
+            document.getElementById("pm1Monto").innerText = `Bs. ${montoBs}`;
+            document.getElementById("pm2Monto").innerText = `Bs. ${montoBs}`;
+        }
+
+        // Función para actualizar el display de tickets seleccionados en el formulario de compra
+        function updateSelectedTicketsInfo() {
+            const display = document.getElementById('displaySelectedTickets');
+            const selectedArr = Array.from(selectedTickets).sort((a, b) => a - b); // Ordenar para mejor visualización
+            display.innerText = selectedArr.length > 0 ? selectedArr.join(', ') : 'Ninguno';
+            calcularMonto(); // Recalcula el monto cuando cambia la selección
+        }
+
+        // Nueva función para enviar datos a Google Apps Script (modificada para loader y GET/POST)
+        async function enviarDatosAAppsScript(data, sheetName, method = "POST") {
+            showLoader();
+            const formData = new FormData();
+            for (const key in data) {
+                formData.append(key, data[key]);
+            }
+            formData.append("sheet", sheetName);
+
+            let url = SCRIPT_URL;
+            if (method === "GET") {
+                url += "?" + new URLSearchParams(formData).toString();
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    body: method === "POST" ? formData : null, // Solo body para POST
+                });
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error("Error al enviar datos a Google Sheets:", error);
+                return { status: "error", message: "No se pudo conectar con el servidor de Google Sheets." };
+            } finally {
+                hideLoader();
+            }
+        }
+
+        // --- Lógica del Modal de Selección de Tickets ---
+        async function openTicketSelectionModal() {
+            showLoader();
+            closeModal('comprarModal'); // Cierra el modal de compra temporalmente
+
+            // Obtener tickets vendidos al abrir el modal
+            const result = await enviarDatosAAppsScript({}, "TicketsComprados", "GET"); // No se envía data, solo se pide los tickets
+            // hideLoader() ya lo maneja enviarDatosAAppsScript
+
+            if (result.status === "success") {
+                soldTickets = new Set(result.soldTickets); // Actualiza la lista de tickets vendidos
+                renderTicketGrid(); // Renderiza la cuadrícula de tickets
+                
+                // Restaurar la selección actual del usuario si ya había seleccionado algo antes de cerrar
+                const currentSelectedTicketsArr = Array.from(selectedTickets);
+                selectedTickets.clear(); // Limpiar y volver a seleccionar para asegurar que el DOM refleje
+                currentSelectedTicketsArr.forEach(ticketNum => {
+                    const ticketElement = document.getElementById(`ticket-${ticketNum}`);
+                    if (ticketElement && !ticketElement.classList.contains('sold')) {
+                        ticketElement.classList.add('selected');
+                        selectedTickets.add(ticketNum);
+                    }
+                });
+                updateModalSelectedTicketsDisplay();
+                openModal('ticketSelectionModal'); // Abre el modal de tickets
+            } else {
+                alert("Error al cargar la lista de tickets: " + result.message);
+                openModal('comprarModal'); // Vuelve al modal de compra si falla
+            }
+        }
+
+        function renderTicketGrid() {
+            const ticketGrid = document.getElementById('ticketGrid');
+            ticketGrid.innerHTML = ''; // Limpiar cuadrícula existente
+
+            for (let i = 1; i <= TOTAL_TICKETS; i++) {
+                const ticketDiv = document.createElement('div');
+                ticketDiv.id = `ticket-${i}`;
+                ticketDiv.className = 'ticket-item';
+                ticketDiv.innerText = i;
+
+                if (soldTickets.has(i)) {
+                    ticketDiv.classList.add('sold');
+                } else {
+                    ticketDiv.classList.add('available');
+                    ticketDiv.onclick = () => toggleTicketSelection(i, ticketDiv);
+                }
+                ticketGrid.appendChild(ticketDiv);
+            }
+        }
+
+        function toggleTicketSelection(ticketNum, element) {
+            if (element.classList.contains('sold')) {
+                // No hacer nada si el ticket está vendido
+                return;
+            }
+
+            if (selectedTickets.has(ticketNum)) {
+                selectedTickets.delete(ticketNum);
+                element.classList.remove('selected');
+                element.classList.add('available');
+            } else {
+                selectedTickets.add(ticketNum);
+                element.classList.add('selected');
+                element.classList.remove('available');
+            }
+            updateModalSelectedTicketsDisplay();
+        }
+
+        function updateModalSelectedTicketsDisplay() {
+            const display = document.getElementById('currentSelectedTickets');
+            const countDisplay = document.getElementById('currentTicketsCount');
+            const selectedArr = Array.from(selectedTickets).sort((a, b) => a - b);
+            display.innerText = selectedArr.length > 0 ? selectedArr.join(', ') : 'Ninguno';
+            countDisplay.innerText = `${selectedArr.length} ticket(s) seleccionado(s)`;
+        }
+
+        function confirmTicketSelection() {
+            if (selectedTickets.size < MIN_TICKETS_PURCHASE) {
+                alert(`Debe seleccionar al menos ${MIN_TICKETS_PURCHASE} tickets.`);
+                return;
+            }
+            updateSelectedTicketsInfo(); // Actualiza la información en el modal de compra
+            closeModal('ticketSelectionModal');
+            openModal('comprarModal'); // Vuelve al modal de compra
+        }
+
+        function cancelTicketSelection() {
+            // Al cancelar, descartar la selección actual
+            selectedTickets.clear(); // Limpiar la selección si el usuario cancela
+            updateSelectedTicketsInfo(); // Actualizar el display principal
+            closeModal('ticketSelectionModal');
+            openModal('comprarModal');
+        }
+
+        // --- Fin Lógica del Modal de Selección de Tickets ---
+
+        // Función para copiar datos al portapapeles
+        function copyToClipboard(text, messageElementId) {
+            navigator.clipboard.writeText(text).then(() => {
+                const messageElement = document.getElementById(messageElementId);
+                messageElement.textContent = '¡Copiado!';
+                setTimeout(() => {
+                    messageElement.textContent = '';
+                }, 2000); // El mensaje desaparece después de 2 segundos
+            }).catch(err => {
+                console.error('Error al copiar: ', err);
+                alert('Error al copiar los datos. Por favor, inténtalo manualmente.');
+            });
+        }
+
+        // Función para manejar la copia de datos de Pago Móvil
+        function copyPaymentData(type) {
+            let dataToCopy = '';
+            let messageElementId = '';
+            const monto = document.getElementById('montoDisplay').textContent.replace('Monto a pagar: ', ''); // Obtiene el monto del display general
+
+            if (type === 'pm1') {
+                const bank = document.getElementById('pm1Bank').textContent;
+                const cedula = document.getElementById('pm1Cedula').textContent;
+                const phone = document.getElementById('pm1Phone').textContent;
+                dataToCopy = `Pago Móvil (${bank}):\nBanco: ${bank}\nCédula: ${cedula}\nTeléfono: ${phone}\nMonto: ${monto}`;
+                messageElementId = 'pm1CopyMessage';
+            } else if (type === 'pm2') {
+                const bank = document.getElementById('pm2Bank').textContent;
+                const cedula = document.getElementById('pm2Cedula').textContent;
+                const phone = document.getElementById('pm2Phone').textContent;
+                dataToCopy = `Pago Móvil (${bank}):\nBanco: ${bank}\nCédula: ${cedula}\nTeléfono: ${phone}\nMonto: ${monto}`;
+                messageElementId = 'pm2CopyMessage';
+            }
+            copyToClipboard(dataToCopy, messageElementId);
+        }
+
+        // Lógica para el nuevo flujo de "Pagar" y "Enviar Registros"
+        document.addEventListener('DOMContentLoaded', function() {
+            const raffleForm = document.getElementById('raffleForm');
+            const showPaymentDetailsBtn = document.getElementById('showPaymentDetailsBtn'); // Botón "Pagar"
+            const submitRaffleFormBtn = document.getElementById('submitRaffleFormBtn'); // Botón "Enviar Registros"
+            const paymentOptionsContainer = document.getElementById('paymentOptionsContainer'); // Nuevo contenedor de opciones de pago
+            const raffleFormResponseMessage = document.getElementById('raffleFormResponseMessage'); // Mensajes del formulario de compra
+
+            // Inicializar los valores fijos de pago móvil
+            document.getElementById('pm1Bank').textContent = bankPM1;
+            document.getElementById('pm1Cedula').textContent = cedulaPM1;
+            document.getElementById('pm1Phone').textContent = telefonoPM1;
+
+            document.getElementById('pm2Bank').textContent = bankPM2;
+            document.getElementById('pm2Cedula').textContent = cedulaPM2;
+            document.getElementById('pm2Phone').textContent = telefonoPM2;
+
+            // Evento para mostrar las opciones de pago y el botón de enviar
+            showPaymentDetailsBtn.addEventListener('click', function(event) {
+                // Validación de campos del formulario antes de mostrar el pago
+                if (!raffleForm.checkValidity()) { 
+                    raffleForm.reportValidity(); // Muestra mensajes de error del navegador
+                    raffleFormResponseMessage.textContent = 'Por favor, completa todos los campos requeridos y selecciona tus tickets antes de proceder al pago.';
+                    raffleFormResponseMessage.style.color = 'red';
+                    raffleFormResponseMessage.style.backgroundColor = '#ffe0e0';
+                    return;
+                }
+
+                // Validar que se hayan seleccionado tickets
+                if (selectedTickets.size < MIN_TICKETS_PURCHASE) {
+                    alert(`Por favor, selecciona al menos ${MIN_TICKETS_PURCHASE} tickets antes de proceder al pago.`);
+                    raffleFormResponseMessage.textContent = `Por favor, selecciona al menos ${MIN_TICKETS_PURCHASE} tickets.`;
+                    raffleFormResponseMessage.style.color = 'orange';
+                    raffleFormResponseMessage.style.backgroundColor = '#fff3cd';
+                    return;
+                }
+
+                // Si todas las validaciones pasan, muestra la información de pago y el botón de enviar
+                paymentOptionsContainer.style.display = 'block'; // Muestra el nuevo contenedor de opciones de pago
+                submitRaffleFormBtn.style.display = 'block'; // Muestra el botón de enviar
+                showPaymentDetailsBtn.style.display = 'none'; // Oculta el botón de "Pagar"
+                showPaymentDetailsBtn.disabled = false; // Asegura que no esté deshabilitado
+                raffleFormResponseMessage.textContent = ''; // Limpia mensajes previos
+                raffleFormResponseMessage.style.backgroundColor = 'transparent';
+                raffleFormResponseMessage.style.color = 'black';
+                calcularMonto(); // Asegura que el monto esté actualizado en las opciones de pago
+            });
+
+            // Evento para enviar el formulario a Google Apps Script (cuando se presiona "Enviar Registros")
+            raffleForm.addEventListener('submit', async function(event) {
+                event.preventDefault(); // Evita el envío tradicional del formulario HTML
+
+                raffleFormResponseMessage.textContent = 'Enviando tus registros... por favor espera.';
+                raffleFormResponseMessage.style.color = 'blue';
+                raffleFormResponseMessage.style.backgroundColor = '#e0f7fa'; 
+                
+                // Deshabilitar botones para evitar envíos múltiples
+                showPaymentDetailsBtn.disabled = true;
+                submitRaffleFormBtn.disabled = true;
+
+                // Recopilar datos del formulario
+                const nombre = document.getElementById("nombre").value.trim();
+                const apellido = document.getElementById("apellido").value.trim();
+                const cedula = document.getElementById("cedula").value.trim();
+                const telefono = document.getElementById("telefono").value.trim();
+                const correo = document.getElementById("correo").value.trim();
+                const montoBsText = document.getElementById("montoDisplay").innerText;
+                const montoBs = parseFloat(montoBsText.replace('Monto a pagar: Bs. ', ''));
+
+                const purchaseData = {
+                    nombre,
+                    apellido,
+                    cedula,
+                    telefono,
+                    correo,
+                    selectedTickets: Array.from(selectedTickets).join(','), // Enviar los tickets seleccionados como CSV
+                    montoBs
+                };
+
+                const result = await enviarDatosAAppsScript(purchaseData, "TicketsComprados", "POST");
+
+                if (result.status === "success") {
+                    raffleFormResponseMessage.textContent = '¡Registros enviados con éxito! Después de validar su pago, recibirá un correo con sus tickets solicitados. ¡Mucha suerte!';
+                    raffleFormResponseMessage.style.color = 'green';
+                    raffleFormResponseMessage.style.backgroundColor = '#e8f5e9'; 
+
+                    // Limpiar formulario después del envío exitoso
+                    raffleForm.reset(); 
+                    selectedTickets.clear(); // Limpiar la selección de tickets
+                    updateSelectedTicketsInfo(); // Actualizar el display de tickets
+                    
+                    paymentOptionsContainer.style.display = 'none'; // Oculta las opciones de pago
+                    submitRaffleFormBtn.style.display = 'none'; // Oculta el botón de enviar
+                    showPaymentDetailsBtn.style.display = 'block'; // Vuelve a mostrar el botón de "Pagar"
+                    showPaymentDetailsBtn.disabled = false; // Habilita el botón de "Pagar"
+                    
+                } else {
+                    raffleFormResponseMessage.textContent = `Error al enviar los registros: ${result.message || 'Inténtelo de nuevo.'}`;
+                    raffleFormResponseMessage.style.color = 'red';
+                    raffleFormResponseMessage.style.backgroundColor = '#ffe0e0';
+                    
+                    // Re-habilitar botones para permitir reintentar
+                    showPaymentDetailsBtn.disabled = false;
+                    submitRaffleFormBtn.disabled = false;
+                }
+            });
+        });
+
+        // Función para enviar datos del reporte de pago (mantener tal cual)
+        async function enviarReporte() {
+            const cedula = document.getElementById("cedulaReporte").value.trim();
+            const telefono = document.getElementById("telefonoReporte").value.trim();
+            const correo = document.getElementById("correoReporte").value.trim(); // Obtener el correo
+            const referencia = document.getElementById("referencia").value.trim();
+            const bancoEmisor = document.getElementById("bancoEmisor").value;
+
+            if (!cedula || !telefono || !correo || !referencia || bancoEmisor === "Seleccione banco emisor" || bancoEmisor === "") {
+                alert("Por favor, complete todos los campos del reporte correctamente.");
+                return;
+            }
+
+            // Datos a enviar para el reporte de pago
+            const reportData = {
+                cedula,
+                telefono,
+                correo, // Incluir correo en los datos del reporte
+                referencia,
+                bancoEmisor
+            };
+
+            const result = await enviarDatosAAppsScript(reportData, "ReportesDePago", "POST");
+
+            if (result.status === "success") {
+                alert("¡Reporte de pago enviado con éxito! Gracias por su información.");
+                closeModal("reportModal");
+                // Limpiar los campos del formulario de reporte
+                document.getElementById("cedulaReporte").value = '';
+                document.getElementById("telefonoReporte").value = '';
+                document.getElementById("correoReporte").value = ''; // Limpiar el correo
+                document.getElementById("referencia").value = '';
+                document.getElementById("bancoEmisor").value = "";
+            } else {
+                alert("Error al enviar el reporte de pago: " + result.message);
+            }
+        }
+
+        // Ocultar el loader inicial cuando el DOM esté completamente cargado y obtener la tasa del dólar
+        document.addEventListener('DOMContentLoaded', () => {
+            obtenerTasaDolar().finally(() => {
+                setTimeout(hideLoader, 500);
+            });
+        });
+
+    </script>
 </body>
 </html>
