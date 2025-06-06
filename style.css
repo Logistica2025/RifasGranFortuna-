@@ -205,30 +205,41 @@ footer {
     height: 40px; /* Ajustado el tamaño del logo */
     width: auto;
     margin-right: 1rem;
+    flex-shrink: 0; /* Evita que el logo se encoja */
 }
 
 .marquee-container {
-    flex: 1;
-    overflow: hidden;
-    white-space: nowrap;
+    flex: 1; /* Ocupa el espacio restante */
+    overflow: hidden; /* Esencial para el efecto de desplazamiento */
+    white-space: nowrap; /* Mantiene el texto en una sola línea */
+    line-height: 1; /* Ayuda a controlar la altura de la línea del texto */
+    display: flex; /* Asegura que el texto esté centrado verticalmente dentro del contenedor del marquee */
+    align-items: center; /* Centra el texto verticalmente */
+    height: 100%; /* Asegura que el contenedor ocupe toda la altura de la barra superior */
+    position: relative; /* Añadido: Importante para el posicionamiento absoluto del texto */
 }
 
 .marquee-text {
     display: inline-block;
-    padding-left: 100%;
+    position: absolute; /* Añadido: Permite que el texto se posicione fuera del flujo normal */
+    right: -100%; /* Añadido: Comienza el texto 100% fuera del contenedor a la derecha */
     animation: marquee 15s linear infinite;
     font-weight: bold;
     color: #32cd32; /* verde brillante */
     text-shadow: 0 0 5px #32cd32;
     transition: color 0.5s ease, text-shadow 0.5s ease;
+    font-size: 1.1rem; /* Un tamaño de fuente que suele encajar bien, ajusta si es necesario */
+    margin: 0;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 @keyframes marquee {
     0% {
-        transform: translateX(0%);
+        transform: translateX(0); /* Ahora 0% es la posición de inicio definida por 'right: -100%' */
     }
     100% {
-        transform: translateX(-100%);
+        transform: translateX(-100vw); /* Ajustado a -100vw para que se desplace completamente a la izquierda de la ventana */
     }
 }
 
