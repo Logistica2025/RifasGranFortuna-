@@ -646,55 +646,32 @@
         loaderWrapper.classList.add('hidden');
     }
 
-    // === MODIFICACIÓN CLAVE AQUÍ ===
-    async function obtenerTasaDolar() {
-        showLoader(); // Muestra el loader
-        try {
-            const formData = new FormData();
-            formData.append("action", "getDollarRate"); // Le dice a tu Apps Script que quieres la tasa del dólar
+    // === NUEVA FUNCIÓN PARA OBTENER LA TASA DESDE open.er-api.com ===
+async function obtenerTasaDolar() {
+    showLoader(); // Muestra el loader
+    try {
+        const response = await fetch("https://open.er-api.com/v6/latest/USD");
+        if (!response.ok) throw new Error("Error en la solicitud a la API.");
 
-            // Realiza la solicitud GET a tu Apps Script (que ahora actúa como proxy)
-            const response = await fetch(SCRIPT_URL + "?" + new URLSearchParams(formData).toString(), {
-                method: "GET", // Es una solicitud GET
-            });
+        const data = await response.json();
+        const tasa = data?.rates?.VES;
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
-            }
-
-            const result = await response.json();
-            console.log("Respuesta de Apps Script para tasa dólar:", result); // Para depuración, revisa la consola
-
-            if (result.status === "success" && typeof result.dollarRate !== 'undefined') {
-                tasaDolar = parseFloat(result.dollarRate);
-            } else if (result.status === "error" && typeof result.defaultRate !== 'undefined') {
-                 // Si el Apps Script no pudo obtener la tasa pero envió un valor por defecto
-                console.warn("Apps Script no pudo obtener la tasa, usando valor por defecto.");
-                tasaDolar = parseFloat(result.defaultRate);
-            }
-            else {
-                // Fallback si la respuesta de Apps Script no es la esperada
-                console.warn("Apps Script no devolvió una tasa de dólar válida. Usando valor por defecto (100).");
-                tasaDolar = 100;
-            }
-
-            // Asegúrate de que la tasa obtenida sea un número válido
-            if (isNaN(tasaDolar) || tasaDolar <= 0) {
-                console.warn("La tasa de dólar obtenida (a través de Apps Script) no es un número válido o es cero. Usando valor por defecto (100).");
-                tasaDolar = 100;
-            }
-
-            calcularMonto(); // Llama a la función que usa la tasa una vez obtenida
-        } catch (error) {
-            console.error("Error al obtener la tasa del dólar a través de Apps Script:", error);
-            tasaDolar = 100; // valor por defecto si falla el Apps Script o la API externa
-            calcularMonto();
-            alert("Advertencia: No se pudo obtener la tasa de cambio actual. Se usará un valor de Bs. 100 por dólar.");
-        } finally {
-            hideLoader(); // Oculta el loader al finalizar
+        if (typeof tasa === "number" && tasa > 0) {
+            tasaDolar = parseFloat(tasa);
+        } else {
+            console.warn("La API respondió pero no hay tasa válida. Usando valor por defecto (100).");
+            tasaDolar = 100;
         }
+
+    } catch (error) {
+        console.error("Error al obtener la tasa del dólar desde la API:", error);
+        tasaDolar = 100; // Valor por defecto
+        alert("Advertencia: No se pudo obtener la tasa de cambio actual. Se usará Bs. 100 por dólar.");
+    } finally {
+        calcularMonto(); // Llama a tu función de cálculo
+        hideLoader();    // Oculta el loader
     }
+}
     // === FIN MODIFICACIÓN CLAVE ===
 
 
